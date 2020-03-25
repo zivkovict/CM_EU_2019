@@ -1,0 +1,90 @@
+---
+title: "Conditioned microbiome summary - Iceland"
+author: "Alyssa Carrell"
+date: "1/24/2020"
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+ 
+```{r warning=FALSE, results='hide', message=FALSE}
+library(tidyverse)
+library(car)
+library(rcompanion)
+library(FSA)
+library(agricolae)
+library(reshape2)
+```
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path = "Figs/", dev="pdf")
+  
+```
+
+
+```{r setup, include=FALSE}
+library(captioner)
+fig_nums <- captioner(prefix = "Fig.")
+fig.1_cap <- fig_nums(name = "fig_1", 
+                        caption = "Growth rate of conditioned microbiome applied to Sphagnum fallax, Sphagnum Magellanicum or Sphagnum fuscum")
+
+
+```
+
+```{r, echo = FALSE, message = FALSE}
+
+#import phenotype data into R
+
+CM <- read.delim("CM_Iceland_Phenotype.txt")
+
+CM$Growth.rate.cmperday <- (CM$Week.4-CM$Week.0)/28
+
+```
+
+# Growth Phenotypes for each moss across growth chamber treatments
+
+```{r awesomness-summary, echo=FALSE, fig.width = 10, fig.height=8, fig.align='center',fig.cap = fig.1_cap}
+
+CM.sum<-CM %>%
+  filter(Person=="Alyssa")%>%
+  group_by(Moss, Chamber, Microbe) %>%
+  summarise( N = length(Growth.rate.cmperday),
+    mean = mean(Growth.rate.cmperday),
+    sd = sd(Growth.rate.cmperday),
+    se = sd/sqrt(N)
+  )%>%
+  ggplot(aes(x=Chamber, y =mean, fill=Chamber))+
+   geom_bar(position=position_dodge(), stat = "identity") +
+  geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=0.1, position=position_dodge(.9)) +
+  xlab(" Growth chamber") +ylab("Growth rate (cm/day)") + theme(axis.text=element_text(size=12),
+        axis.text.x = element_text(angle = 0, vjust = 0.5),
+        axis.title=element_text(size=16,face="bold"),
+        legend.text=element_text(size=16))+
+  facet_grid(Moss~Microbe,scales="free")+  
+  theme(strip.background = element_rect(fill="black"),
+        strip.text = element_text(color="white",size=16))+
+  guides(fill=guide_legend(keywidth = 0.75,keyheight = 0.75)) 
+
+CM.sum
+
+```
+
+##Fallax statistics
+``` {r}
+CM.Fallax<- CM %>%
+  filter(Person=="Alyssa")
+  
+CM.Fall.rank <- rank(CM.Fallax$Growth.rate.cmperday)
+CM.Fallax <- cbind ( CM.Fallax, CM.Fall.rank)
+ranked.CM.Fall.aov <- aov(CM.Fall.rank ~ Chamber + Microbe + Chamber:Microbe, data = CM.Fallax)
+Anova(ranked.CM.Fall.aov, type = 3)
+TukeyHSD(ranked.CM.Fall.aov)
+```
+
