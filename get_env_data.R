@@ -35,7 +35,7 @@ day.night <- with(dat[dat$timeD > "2019-06-06 00:00:00" & dat$timeD < "2019-06-2
                       aggregate(cbind(temp_2mAir_C, temp_7cmPeat_C,wt_s.mag, wt_wet_part)~factor(day_night), FUN=mean))
 
 # Mean temp and WT the last 2 days before sampling (the day before and the day of sampling)
-with(dat[dat$timeD > "2019-06-06 00:00:00" & dat$timeD < "2019-06-20 00:00:00",], 
+with(dat[dat$timeD > "2019-06-18 00:00:00" & dat$timeD < "2019-06-20 00:00:00",], 
      colMeans(cbind(temp_2mAir_C, temp_7cmPeat_C,wt_s.mag, wt_wet_part)))
 
 # Mean day/night temp and WT the last 2 days before sampling (6am to 6pm). Day time the day before sampling and the sampling day
